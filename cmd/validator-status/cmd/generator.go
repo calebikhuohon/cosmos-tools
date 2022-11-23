@@ -1,20 +1,33 @@
-package main
+package cmd
 
 import (
 	"context"
 	req "cosmos-tools/client"
 	"fmt"
 	"github.com/gocarina/gocsv"
+	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
-	"log"
 	"os"
 )
 
+func init() {
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "generate",
+		Short: "generates CSVs with specified cosmos chain data",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := generate(chainName); err != nil {
+				return err
+			}
+			return nil
+		},
+	})
+}
+
 type ValidatorList struct {
-	ValidatorMoniker string `json:"validator_moniker" ,csv:"validator_moniker"`
-	PerVotingPower   string `json:"per_voting_power" ,csv:"per_voting_power"`
-	SelfDelegation   string `json:"self_delegation" ,csv:"self_delegation"`
-	TotalDelegation  int    `json:"total_delegation" ,csv:"total_delegation"`
+	ValidatorMoniker string `csv:"validator_moniker"`
+	PerVotingPower   string `csv:"per_voting_power"`
+	SelfDelegation   string `csv:"self_delegation"`
+	TotalDelegation  int    `csv:"total_delegation"`
 }
 
 type DelegatorList struct {
@@ -28,16 +41,14 @@ type DelegatorValidatorsList struct {
 	BondedToken  string `csv:"bonded_token"`
 }
 
-func main() {
-	//take in a cosmos chain name
+func generate(chain string) error {
 	client := req.NewRequests()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	validators, err := client.GetValidatorList(ctx, os.Args[1])
+	validators, err := client.GetValidatorList(ctx, chain)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return err
 	}
 
 	slices.SortFunc(validators, func(a, b req.Validator) bool {
@@ -51,7 +62,7 @@ func main() {
 	)
 
 	for _, validator := range validators {
-		delegators, err := client.GetDelegators(ctx, validator.OperatorAddress, os.Args[1])
+		delegators, err := client.GetDelegators(ctx, validator.OperatorAddress, chain)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -87,24 +98,24 @@ func main() {
 				VotingPower: delegators[i].Delegation.Shares,
 			})
 		}
-
-		fmt.Println(validator.OperatorAddress)
 	}
 
 	err = WriteCSV("validators.csv", validatorsCSV)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = WriteCSV("delegators.csv", delegatorCSV)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = WriteCSV("delegatorValidators.csv", delegatorValidatorsCSV)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+
+	return nil
 }
 
 func WriteCSV(filename string, data any) error {

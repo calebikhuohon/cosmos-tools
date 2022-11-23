@@ -8,11 +8,6 @@ import (
 	"net/http"
 )
 
-const (
-	//registryUrl      = "https://raw.githubusercontent.com/cosmos/chain-registry/master"
-	validatorBaseUrl = "https://api.mintscan.io/v1"
-)
-
 type Requests interface {
 	GetValidatorList(ctx context.Context, chain string) ([]Validator, error)
 	GetDelegators(ctx context.Context, validatorAddress, chain string) ([]DelegationResponse, error)
@@ -27,31 +22,6 @@ func NewRequests() Requests {
 	return &requests{client: http.DefaultClient}
 }
 
-//func (r requests) GetChain(name string) (Chain, error) {
-//	query := fmt.Sprintf("%s/%s/chain.json", registryUrl, name)
-//	resp, err := r.client.Get(query)
-//	if err != nil {
-//		return Chain{}, err
-//	}
-//
-//	// If the chain.json file doesn't exist we simply ignore it
-//	if resp.StatusCode == http.StatusNotFound {
-//		return Chain{}, nil
-//	}
-//
-//	if resp.StatusCode != http.StatusOK {
-//		return Chain{}, fmt.Errorf("unexpected status code from query %s: %d", query, resp.StatusCode)
-//	}
-//
-//	var chain Chain
-//	err = json.NewDecoder(resp.Body).Decode(&chain)
-//	if err != nil {
-//		return Chain{}, err
-//	}
-//
-//	return chain, nil
-//}
-
 func (r requests) GetValidatorList(ctx context.Context, chain string) ([]Validator, error) {
 	query := fmt.Sprintf("https://lcd-%s.keplr.app/cosmos/staking/v1beta1/validators", chain)
 
@@ -60,16 +30,11 @@ func (r requests) GetValidatorList(ctx context.Context, chain string) ([]Validat
 		return nil, err
 	}
 
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "PostmanRuntime/7.29.2")
-
 	resp, err := r.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// If the chain.json file doesn't exist we simply ignore it
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
 	}
@@ -96,9 +61,6 @@ func (r requests) GetDelegators(ctx context.Context, validatorAddress, chain str
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "PostmanRuntime/7.29.2")
 
 	resp, err := r.client.Do(req)
 	if err != nil {

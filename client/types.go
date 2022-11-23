@@ -1,7 +1,5 @@
 package client
 
-import "time"
-
 type Validator struct {
 	OperatorAddress   string          `json:"operator_address"`
 	ConsensusPubkey   ConsensusPubkey `json:"consensus_pubkey"`
@@ -24,7 +22,7 @@ type CommissionRates struct {
 
 type Commission struct {
 	CommissionRates CommissionRates `json:"commission_rates"`
-	UpdateTime      time.Time       `json:"update_time"`
+	UpdateTime      string          `json:"update_time"`
 }
 
 type ConsensusPubkey struct {
