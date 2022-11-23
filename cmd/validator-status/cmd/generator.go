@@ -18,6 +18,7 @@ func init() {
 			if err := generate(chainName); err != nil {
 				return err
 			}
+			fmt.Println("CSV generation complete")
 			return nil
 		},
 	})
@@ -100,17 +101,17 @@ func generate(chain string) error {
 		}
 	}
 
-	err = WriteCSV("validators.csv", validatorsCSV)
+	err = WriteCSV(fmt.Sprintf("validators-%s.csv", chain), validatorsCSV)
 	if err != nil {
 		return err
 	}
 
-	err = WriteCSV("delegators.csv", delegatorCSV)
+	err = WriteCSV(fmt.Sprintf("delegators-%s.csv", chain), delegatorCSV)
 	if err != nil {
 		return err
 	}
 
-	err = WriteCSV("delegatorValidators.csv", delegatorValidatorsCSV)
+	err = WriteCSV(fmt.Sprintf("delegatorValidators-%s.csv", chain), delegatorValidatorsCSV)
 	if err != nil {
 		return err
 	}
