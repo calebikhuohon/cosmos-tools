@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	req "cosmos-tools/client"
+	req "cosmos-tools/pkg/client"
 	"fmt"
 	"github.com/gocarina/gocsv"
 	"github.com/spf13/cobra"
